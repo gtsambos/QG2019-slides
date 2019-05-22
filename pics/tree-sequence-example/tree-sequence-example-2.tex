@@ -1,0 +1,138 @@
+
+\begin{center}
+
+\begin{tikzpicture}[node distance=2mm and 2mm,scale=.5,font=\scriptsize]
+
+\tikzset{greynode/.style={font=\scriptsize,node distance=1cm and 1 cm,fill=black!10,draw=black!30,inner sep=0pt,minimum size=2.5mm,shape=circle},
+mutations/.style={shape=starburst,fill=red!50!blue,inner sep=0.6pt,starburst points=11,starburst point height=.1cm}}
+
+% Middle sample nodes
+\node (s1) [greynode] {1};
+\node (s2) [right=of s1,greynode] {2};
+\node (s3) [right=of s2,greynode] {3};
+\node (s4) [right=of s3,greynode] {4};
+
+% Left sample nodes
+\node (leftTree) at (-5, 0) {};
+\node[greynode] (s3l) at ($(s1) + (leftTree)$) {3};
+\node[greynode] (s1l) at ($(s2) + (leftTree)$) {1};
+\node[greynode] (s2l) at ($(s3) + (leftTree)$) {2};
+\node[greynode] (s4l) at ($(s4) + (leftTree)$) {4};
+
+% Right sample nodes
+\node (rightTree) at (5, 0) {};
+\node [greynode] (s1r) at ($(s1) + (rightTree)$) {1};
+\node [greynode] (s2r) at ($(s2) + (rightTree)$) {2};
+\node [greynode] (s3r) at ($(s3) + (rightTree)$) {3};
+\node [greynode] (s4r) at ($(s4) + (rightTree)$) {4};
+
+% Non-sample nodes
+\node [greynode] (s5) at ($0.5*(s3) + 0.5*(s4) + (0,1)$) {5};
+\node [greynode] (s5r) at ($(s5) + (rightTree)$) {5};
+\node [greynode] (s6) at ($(s3) + (0,1.8)$) {6};
+\node [greynode] (s6r) at ($(s6) + (rightTree)$) {6};
+\node [greynode] (s6l) at ($0.5*(s2l) + 0.5*(s4l) + (0,1.8)$) {6};
+\node [greynode] (s7) at ($(s2) + (0,3)$) {7};
+\node [greynode] (s7l) at ($(s2l) + (0,3)$) {7};
+\node [greynode] (s8r) at ($(s2r) + (0,3.5)$) {8};
+\node [greynode] (s9l) at ($(s1l) + (0,4)$) {9};
+
+% Edges 
+\draw (s6l) -- (s2l); \draw (s6l) -- (s4l); \draw (s7l) -- (s1l); \draw (s7l) -- (s6l); \draw (s3l) -- (s9l); \draw (s9l) -- (s7l); %tree 1
+\draw (s5) -- (s3); \draw (s5) -- (s4); \draw (s6) -- (s2); \draw (s6) -- (s5); \draw (s7) -- (s1); \draw (s7) -- (s6); % tree 2
+\draw (s5r) -- (s3r); \draw (s5r) -- (s4r); \draw (s6r) -- (s2r); \draw (s6r) -- (s5r); \draw (s8r) -- (s1r); \draw (s8r) -- (s6r); % tree 3
+
+% Axes
+\node (leftAx) at (-6,0) {};
+\draw[very thick] (-6,0) -- +(0, 5);
+\foreach \y in {0, 1, 2, 3, 4, 5} \draw ($(leftAx) + (-0.1, \y)$) -- ($(leftAx) + (0.1, \y)$); % tick marks
+\draw[very thick] ($(s3l) + (0,5.5)$) -- ($(s4r) + (0,5.5)$);
+\node (topAx) at (0,5.5) {};
+\node (topLeft) at ($(s3l) + (0,5.5)$) {};
+\node (genUnit) at ($0.1*(s4r) - 0.1*(s3l)$) {};
+\foreach \x in {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10} \draw ($(topLeft) + \x*(genUnit) + (0,0.1)$) -- +(0, -0.2); % tick marks
+\node[anchor=east] at ($(leftAx)$) {0}; \node[anchor=east] at ($(leftAx) + (0,5)$) {5};
+\node[anchor=south] at ($(topLeft)$) {0}; \node[anchor=south] at ($(topLeft) + 5*(genUnit)$) {5}; \node[anchor=south] at ($(topLeft) + 10*(genUnit)$) {10};
+
+% Interval endpoints
+\draw[thin,color=black!50,dashed] ($(topLeft) + 3*(genUnit)$) -- +(0, -5.5);
+\draw[thin,color=black!50,dashed] ($(topLeft) + 7*(genUnit)$) -- +(0, -5.5);
+
+% Mutations
+\node[mutations] (m1) at ($(s3l)!0.3!(s9l)$) {};
+\node[mutations] (m2) at ($(s6l)!0.5!(s7l)$) {};
+\node[mutations] (m3) at ($(s2)!0.6!(s6)$) {};
+\node[mutations] (m4) at ($(s3)!0.5!(s5)$) {};
+\node[mutations] (m5) at ($(s5)!0.5!(s6)$) {};
+\node[mutations] (m6) at ($(s6r)!0.5!(s8r)$) {};
+
+\foreach \x in {1.2, 2.5, 3.3, 3.9, 6.4, 8.4} \node[mutations] at ($(topLeft) + \x*(genUnit) + (0, -0.2)$) {};
+
+% Axis titles
+\node (topLabel) at ($(topLeft) + 5*(genUnit) + (0,1.4)$) {\scriptsize$\textrm{Chromosomal coordinates}$};
+\node[rotate=90,anchor=south] (leftLabel) at ($(leftAx) + (-0.3,2.5)$) {\scriptsize$\textrm{Time}$};
+
+% Haplotypes
+\node[font=\footnotesize] (hap1) at ($(topLeft) + (0,6)$) {\tiny$\textrm{Node }1$};
+\node[font=\footnotesize] (hap2) at ($(topLeft) + (0,5)$) {\tiny$\textrm{Node }2$};
+\node[font=\footnotesize] (hap3) at ($(topLeft) + (0,4)$) {\tiny$\textrm{Node }3$};
+\node[font=\footnotesize] (hap4) at ($(topLeft) + (0,3)$) {\tiny$\textrm{Node }4$};
+
+\foreach \x in {1.2, 2.5, 3.3, 3.9, 6.4, 8.4} \node () at ($(hap1) + \x*(genUnit)$) {\tiny \texttt{0}};
+\foreach \x in {2.5, 3.9, 6.4} \node () at ($(hap2) + \x*(genUnit)$) {\tiny \texttt{0}};
+\foreach \x in {1.2, 3.3, 8.4} \node () at ($(hap2) + \x*(genUnit)$) {\tiny \texttt{1}};
+\foreach \x in {1.2, 3.3} \node () at ($(hap3) + \x*(genUnit)$) {\tiny \texttt{0}};
+\foreach \x in {2.5, 3.9, 6.4, 8.4} \node () at ($(hap3) + \x*(genUnit)$) {\tiny \texttt{1}};
+\foreach \x in {2.5, 3.3, 3.9} \node () at ($(hap4) + \x*(genUnit)$) {\tiny \texttt{0}};
+\foreach \x in {1.2, 6.4, 8.4} \node () at ($(hap4) + \x*(genUnit)$) {\tiny \texttt{1}};
+
+\end{tikzpicture}
+
+%\vspace{5mm}
+%
+%{\footnotesize
+%\begin{tabularx}{1\textwidth}{p{0.5cm}p{0.8cm}|p{0.8cm}p{0.8cm}p{0.8cm}p{0.8cm}|p{1.5cm}p{1cm}X}
+%\toprule
+%\multicolumn{2}{c}{\bf Nodes} & \multicolumn{4}{c}{\bf Edges} & \multicolumn{3}{c}{\bf Mutations}\\
+%\midrule
+%id & time &
+%left & right & parent & child &
+%location & time & nearest node\\
+%\midrule
+%1 & 0.0 &
+%0.0 & 7.0 & 5 & 3 &
+%1.2 & 2.5 & 6 \\
+%2 & 0.0 &
+%0.0 & 7.0 & 5 & 4 &
+%2.5 & 1.2 & 3\\
+%3 & 0.0 &
+%0.0 & 10.0 & 6 & 2 &
+%3.3 & 1.3 & 2\\
+%4 & 0.0 &
+%0.0 & 3.0 & 6 & 4 &
+%3.9 & 0.4 & 3\\
+%5 & 1.1 &
+%3.0 & 10.0 & 6 & 5 &
+%6.4 & 1.4 & 5\\
+%6 & 1.8 &
+%0.0 & 7.0 & 7 & 1 &
+%8.4 & 2.7 & 6 \\
+%7 & 3.0 &
+%0.0 & 7.0 & 7 & 6 &
+%& &\\
+%8 & 3.5 &
+%1.0 & 10.0 & 8 & 1 &
+%& &\\
+%9 & 4.0 &
+%7.0 & 10.0 & 8 & 6 &
+%& &\\
+%& & 
+%0.0 & 3.0 & 9 & 3 &
+%& &\\
+%& & 
+%0.0 & 3.0 & 9 & 7 &
+%& &\\
+%\bottomrule
+%\end{tabularx}
+%}
+\end{center}

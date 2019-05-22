@@ -1,0 +1,50 @@
+
+\begin{tikzpicture}[node distance=3mm and 5mm,xscale=.7,yscale=.5]
+
+\tikzset{greynode/.style={font=\tiny,node distance=1cm and 1 cm,fill=black!10,draw=black!30,inner sep=0pt,minimum size=3.55mm,shape=circle},
+bluenode/.style={font=\tiny,node distance=1cm and 1 cm,fill=blue!30,draw=blue!50,inner sep=0pt,minimum size=3.5mm,shape=circle},
+rednode/.style={font=\tiny,node distance=1cm and 1 cm,fill=red!30,draw=red!50,inner sep=0pt,minimum size=3.5mm,shape=circle}}
+
+% Axis
+\node (leftAx) at (-1,0) {};
+\draw[very thick] (-1,0) -- +(0, 8);
+\foreach \y in {0, 2, 4, 6, 8} \draw ($(leftAx) + (-0.1, \y)$) -- ($(leftAx) + (0.1, \y)$); % tick marks
+%\node[anchor=east] at ($(leftAx)$) {0}; \node[anchor=east] at ($(leftAx) + (0,5)$) {5};
+\node[rotate=90,anchor=south] (leftLabel) at ($(leftAx) + (-0.3,4)$) {$\textrm{Time}$};
+
+% Time arrow
+\draw[densely dashed,color=gray] (12,0) node[above left] {\tiny Present day} -- (-1,0);
+\draw[densely dashed,color=gray] (12, 2.5) node[above left] {\tiny End of admixture} -- (-1, 2.5);
+\draw[densely dashed,color=gray] (12, 4.5) node[above left] {\tiny Start of divergence} -- (-1, 4.5);
+
+% sample nodes
+\node (s1) [greynode] {$\textrm{?}$};
+\node (s2) [right=of s1,greynode] {};
+\node (s3) [right=of s2,greynode] {};
+\node (s4) [right=of s3,greynode] {$\textrm{?}$};
+\node (s5) [right=of s4,greynode] {$\textrm{?}$};
+\node (s6) [right=of s5,greynode] {};
+\node (s7) [right=of s6,greynode] {};
+\node (s8) [right=of s7,greynode] {};
+
+% Non-sample nodes
+\node[greynode] (s9) at ($0.5*(s7) + 0.5*(s8) + (0,1)$) {};
+\node[greynode] (s10) at ($0.5*(s4) + 0.5*(s5) + (0,2)$) {};
+\node[bluenode] (s11) at ($0.5*(s2)+0.5*(s3) + (0,3)$) {};
+\node[rednode] (s12) at ($0.5*(s9)+0.5*(s6) +(0,3)$) {};
+\node[greynode] (s13) at ($0.5*(s10)+0.5*(s12) + (0,2.2)$) {};
+\node[greynode] (s14) at ($0.5*(s1)+0.5*(s11)+(0,3.7)$) {};
+\node[greynode] (s15) at ($0.5*(s13) + 0.5*(s14) + (0,2)$) {};
+
+% Coloured edges
+\foreach \x in {2,3} \draw[color=blue] (s\x) -- (s11); 
+\foreach \x in {7,8} \draw[color=red] (s\x) -- (s9);
+\foreach \x in {6,9} \draw[color=red] (s\x) -- (s12);
+
+% Black edges
+\foreach \x in {4,5} \draw (s\x) -- (s10);
+\foreach \x in {10,12} \draw (s\x) -- (s13);
+\foreach \x in {1,11} \draw (s\x) -- (s14);
+\foreach \x in {13,14} \draw (s\x) -- (s15);
+
+\end{tikzpicture} 

@@ -1,0 +1,34 @@
+
+\begin{tikzpicture}[node distance=4mm and 4mm,scale=.8]
+
+\tikzset{greynode/.style={font=\footnotesize,node distance=1cm and 1 cm,fill=black!10,draw=black!30,inner sep=0pt,minimum size=3.5mm,shape=circle},
+mutations/.style={shape=starburst,fill=red!50!blue,inner sep=0.8pt,starburst points=11,starburst point height=.2cm}}
+
+% Axis
+\node (leftAx) at (-1,0) {};
+\draw[very thick] (-1,0) -- +(0, 5);
+\foreach \y in {0, 1, 2, 3, 4, 5} \draw ($(leftAx) + (-0.1, \y)$) -- ($(leftAx) + (0.1, \y)$); % tick marks
+%\node[anchor=east] at ($(leftAx)$) {0}; \node[anchor=east] at ($(leftAx) + (0,5)$) {5};
+\node[rotate=90,anchor=south] (leftLabel) at ($(leftAx) + (-0.3,2.5)$) {$\textrm{Time}$};
+
+% Time arrow
+\draw[densely dashed,color=gray] (5,0) node[above left] {\tiny Present day} -- (-1,0);
+%\draw[densely dashed,color=gray] (5, 3.6) node[above left] {\tiny Admixture} -- (-1, 3.6);
+%\draw[densely dashed,color=gray] (5, 4.5) node[above left] {\tiny Divergence} -- (-1, 4.5);
+
+% sample nodes
+\node (s1) [greynode] {1};
+\node (s2) [right=of s1,greynode] {2};
+\node (s3) [right=of s2,greynode] {3};
+\node (s4) [right=of s3,greynode] {4};
+
+% Non-sample nodes
+\node [greynode] (s5) at ($0.5*(s3) + 0.5*(s4) + (0,1.8)$) {5};
+%\node [greynode] (s6) at ($0.5*(s2) + 0.5*(s5) + (0,1.5)$) {6};
+%\node [greynode] (s7) at ($0.5*(s1) + 0.5*(s6) + (0,2)$) {7};
+
+
+% Edges 
+\draw (s5) -- (s3); \draw (s5) -- (s4); %\draw (s6) -- (s2); \draw (s6) -- (s5); \draw (s7) -- (s1); \draw (s7) -- (s6);
+
+\end{tikzpicture} 

@@ -1,0 +1,41 @@
+
+\begin{tikzpicture}[node distance=5mm and 5mm]
+
+\tikzset{greynode/.style={font=\footnotesize,node distance=1cm and 1 cm,fill=black!10,draw=black!30,inner sep=0pt,minimum size=3.5mm,shape=circle},
+whitenode/.style={font=\footnotesize,node distance=1cm and 1 cm,fill=white,draw=white,inner sep=0pt,minimum size=3.7mm,shape=circle},
+mutations/.style={shape=starburst,fill=red!50!blue,inner sep=0.8pt,starburst points=11,starburst point height=.2cm}}
+
+\node (timestart) at (0,-4) {};
+
+% Axis
+\node (leftAx) at ($(-1,0) + (timestart)$) {};
+\draw[very thick] ($(-1,0) + (timestart)$) -- +(0, 5);
+\foreach \y in {0, 1, 2, 3, 4, 5} \draw ($(leftAx) + (-0.1, \y)$) -- ($(leftAx) + (0.1, \y)$); % tick marks
+%\node[anchor=east] at ($(leftAx)$) {0}; \node[anchor=east] at ($(leftAx) + (0,5)$) {5};
+\node[rotate=90,anchor=south] (leftLabel) at ($(leftAx) + (-0.3,2.5)$) {$\textrm{Time}$};
+
+% Time arrow
+\draw[densely dashed,color=gray] ($(5,0) + (timestart)$) node[above left] {\tiny Present day} -- ($(-1,0) + (timestart)$);
+\draw[densely dashed,color=gray] ($(5,4) + (timestart)$) node[above left] {\tiny Simulation starts} -- ($(-1,4) + (timestart)$);
+
+% sample nodes
+\node (s1) {};
+\node (s2) [right=of s1,greynode] {};
+\node (s3) [right=of s2] {};
+\node (s4) [right=of s3,greynode] {};
+
+% Non-sample nodes
+\foreach \x in {1,2,3,4} \foreach \y in {1,2,3} \node[greynode] (s\x\y) at ($(s\x) + (0,-\y)$) {};
+
+% Remove some nodes
+\node[whitenode] at (s21) {};
+\foreach \y in {1,2} \node[whitenode] at (s1\y) {};
+\node[whitenode] at (s42){}; \node[whitenode] at (s12){};
+\node[whitenode] at (s31){}; \node[whitenode] at (s41){};
+
+% Edges 
+\draw (s2) -- (s31.center); \draw (s4) -- (s41.center);
+\draw (s22) -- (s31.center); \draw (s41.center) -- (s32);
+\draw (s13) -- (s22) -- (s33); \draw (s23) -- (s32) -- (s43);
+
+\end{tikzpicture} 
