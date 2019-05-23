@@ -26,6 +26,17 @@
 \makeatletter
 \setbeamertemplate{navigation symbols}{}
 
+%% Method to add QR code onto every slide
+%\addtobeamertemplate{footline}{%
+%  \setlength\unitlength{1ex}%
+%  \begin{picture}(0,0) 
+%    % \put{} defines the position of the frame
+%    \put(132,55){\makebox(0,0)[br]{
+%    \includegraphics[scale=.045]{pics/QG2019-qr-code.png}
+%    }}%
+%  \end{picture}%
+%}{}
+
 \usepackage{amsmath, amsthm, graphicx, amssymb}
 \usepackage{color}
 \usepackage{colortbl}
@@ -36,6 +47,9 @@
 \usetikzlibrary{calc,fit,arrows,decorations.pathmorphing,decorations.footprints,backgrounds,fit,positioning}
 \usetikzlibrary{shapes.symbols}
 \usepackage[style=authoryear]{biblatex}
+%\usepackage{cellspace}
+%\setlength\cellspacetoplimit{1.5ex}
+%\setlength\cellspacebottomlimit{1.5ex}
 
 % Define a colour-blind-friendly palette.
 %
@@ -125,8 +139,8 @@
 \titlegraphic{\includegraphics[scale=.5]{pics/unimelb-logo.jpg}}
 \title{Efficient simulation of introgression,\\ admixture and local ancestry}
 \author{Georgia Tsambos}
-%\institute{{\normalsize University of Melbourne}}
-\date{Quantative Genomics conference, June 10, 2019}
+\institute{{\normalsize Melbourne Integrative Genomics, Australia}}
+\date{Quantitative Genomics, 10 June 2019}
 % information
 
 % tikz colour settings
@@ -143,13 +157,11 @@
 \frametitle{Talk outline}
 
 \begin{enumerate}
-\itemsep4mm
+\itemsep7mm
 \item[1. ] Introduction to admixture and local ancestry
 \item[2. ] Tree sequences
-\item[3. ] Simulating tree sequences
-\item[4. ] Simulating local ancestry
-\item[5. ] A new method for simulating local ancestry
-\item[6. ] Why this work matters
+\item[3. ] Simulating local ancestry with tree sequences - existing ways
+\item[4. ] Simulating local ancestry with tree sequences - new way
 \end{enumerate}
 \end{frame}
 
@@ -205,24 +217,21 @@
 \begin{center}
 \input{pics/global-and-local-ancestry.tex}
 \end{center}
+My PhD work is about \magenta{simulating} and inferring local ancestry.\\[2mm]
+
+Understanding local ancestry is important in studies of demography and history, medicine and genetic pipelines.
+\end{frame}
+
+%\begin{frame}
+%\frametitle{Why is understanding admixture and ancestry important?}
+%
 %\begin{wideitemize}
-%\item {\bf Global ancestry: } What proportion of my genome comes from ancestry $A$?
-%\item {\bf Local ancestry: } Which segments of my genome come from ancestry $A$?
+%\item {\bf Demography and history\\} Inference about the dates and composition of historical migrations and admixture events. 
+%\item {\bf Medicine\\} GWAS and risk prediction studies, admixture mapping studies.
+%\item {\bf Genetic pipelines\\} Phasing and imputation.
 %\end{wideitemize}
-%\vspace{5mm}
-My PhD work is about \magenta{simulating} and inferring local ancestry.
-\end{frame}
-
-\begin{frame}
-\frametitle{Why is understanding admixture and ancestry important?}
-
-\begin{wideitemize}
-\item {\bf Demography and history\\} Inference about the dates and composition of historical migrations and admixture events. 
-\item {\bf Medicine\\} GWAS and risk prediction studies, admixture mapping studies.
-\item {\bf Genetic pipelines\\} Phasing and imputation.
-\end{wideitemize}
-
-\end{frame}
+%
+%\end{frame}
 
 
 \section{Storing genomes with history using tree sequences}
@@ -289,7 +298,7 @@ Storing $n = 1\times 10^5$ chromosomes in a compressed VCF requires $\approx$ 50
 \begin{minipage}{.48\textwidth}
 \begin{wideitemize}
 \item Nodes = haplotypes
-\item Edge lengths = time
+\item Edge heights = time
 \end{wideitemize}
 \end{minipage}
 \end{frame}
@@ -349,16 +358,16 @@ The branch joining a sample node to an ancestral node shows the sample's ancestr
 \end{center}
 \end{frame}
 
-\begin{frame}
-\frametitle{But doing this efficiently is hard...}
-\begin{wideitemize}
-\item There are substiantial correlations in genealogy between individual nodes, and across genomes.
-\item Requires clever operations for altering tree sequences by `simplifying' the tables that represent them.
-\item More detail in an upcoming paper by Georgia, Damjan, Stephen, Jerome Kelleher (Oxford) \& Peter Ralph (Oregon).
-\end{wideitemize}
-\end{frame}
+%\begin{frame}
+%\frametitle{But doing this efficiently is hard...}
+%\begin{wideitemize}
+%\item There are substiantial correlations in genealogy between individual nodes, and across genomes.
+%\item Requires clever operations for altering tree sequences by `simplifying' the tables that represent them.
+%\item More detail in an upcoming paper by Georgia, Damjan, Stephen, Jerome Kelleher (Oxford) \& Peter Ralph (Oregon).
+%\end{wideitemize}
+%\end{frame}
 
-\section{Simulating tree sequences}
+\section{Simulating tree sequences - old methods}
 
 \begin{frame}
 \frametitle{Realistic simulations are important}
@@ -435,14 +444,72 @@ Some methods for ancestry inference are trained on simulated data.
 \end{frame}
 
 \begin{frame}
-\frametitle{}
-\begin{wideitemize}
-\item \texttt{msprime} simulates the sparsest set of haplotypes that are needed to represent the relative genealogical history of the samples.
-\item This sparsity makes it quick and memory-efficient to run.
-\item Limited by the assumptions of the coalescent model: infinite sites, no selection or deviations from random mating, small sample size relative to effective population size...
-\item See (Kelleher et al., 2016) for more details.
-\end{wideitemize}
+\frametitle{A simplified toy example: Neanderthal introgression}
+\begin{center}
+\begin{tabularx}{1\textwidth}{p{3cm}X}
+\toprule
+{\bf Generations} & {\bf Event}\\
+\midrule
+$\approx$ 240\ts 000 & Common ancestor of all modern Eurasians and Neanderthals at all loci.\\[1mm]
+20\ts 000 & Divergence of Eurasians and Neanderthals.\\[1mm]
+2\ts 500 & 2\% introgression of Neanderthals into Eurasians.\\[1mm]
+0 & Samples from 100 Eurasian individuals obtained.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+Chromosome of 50\ts 000\ts 000 base pairs, constant effective population sizes of 5000 individuals, uniform recombination rate $1\times 10^{-8}$ bp/generation, uniform mutation rate $1\times 10^{-8}$ bp/generation, all variation is neutral.
 \end{frame}
+
+\begin{frame}
+\frametitle{\texttt{msprime} performance}
+\begin{center}
+\small
+\centering
+\setlength{\aboverulesep}{5pt}
+\setlength{\belowrulesep}{5pt}
+\begin{tabularx}{1\textwidth}{p{3.5cm}p{2cm}p{1.9cm}p{1.9cm}X}
+\toprule
+%& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
+ & Missing data & Run time &  File size & Realism \\
+\midrule 
+{\bf default} & $4.0$\% &  &  & \crossmark \\ \addlinespace
+{\bf + full ARG} & $0.0$\% & &  & \crossmark \\ \addlinespace
+{\bf + migration records} & $0.0$\% &  & & \crossmark \\ \addlinespace
+\bottomrule
+\end{tabularx}
+\end{center}
+\vspace{5mm}
+\end{frame}
+
+\begin{frame}
+\frametitle{\texttt{msprime} results - missing ancestry data}
+\includegraphics[scale=.22]{pics/msprime/msprime-sample.png}\quad\quad
+Global ancestry averaged over all of the simulated samples was 
+\begin{itemize}
+\item $96.0\%$ Sapiens
+\item $<0.05\%$ Neanderthal
+\item \magenta{$4.0\%$ unassigned.}
+\end{itemize}
+%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
+\end{frame}
+
+\begin{frame}
+\frametitle{Missing ancestry is due to incomplete lineage sorting}
+\begin{center}
+\input{pics/simulation-problem.tex}
+\end{center}
+Some samples do not have simulated ancestors in the given populations.
+\end{frame}
+
+%\begin{frame}
+%\frametitle{}
+%\begin{wideitemize}
+%\item \texttt{msprime} simulates the sparsest set of haplotypes that are needed to represent the relative genealogical history of the samples.
+%\item This sparsity makes it quick and memory-efficient to run.
+%\item Limited by the assumptions of the coalescent model: infinite sites, no selection or deviations from random mating, small sample size relative to effective population size...
+%\item See (Kelleher et al., 2016) for more details.
+%\end{wideitemize}
+%\end{frame}
 
 \begin{frame}
 \frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
@@ -581,78 +648,26 @@ Mutations can be added during the simulation of the tree topologies, or generate
 \end{frame}
 
 \begin{frame}
-\frametitle{}
-\begin{wideitemize}
-\item Can accomodate complex and more ecologically realistic demographic scenarios including selection, overlapping generations, spatially-based survival and mating patterns, density-dependent population regulation...
-\item Simulates \magenta{entire population in every generation}, so much slower than \texttt{msprime}.
-\item See (Haller et al., 2018) and (Haller \& Messer, 2019) for details about \texttt{SLiM}, and (Kelleher et al., 2018) for details of the tree sequence pruning/simplification technique.
-\end{wideitemize}
-\end{frame}
-
-\section{Q. Can these methods simulate local ancestry?}
-
-\begin{frame}
-\frametitle{A simplified toy example: Neanderthal introgression}
+\frametitle{\texttt{SLiM} performance}
 \begin{center}
-\begin{tabularx}{1\textwidth}{p{3cm}X}
+\small
+\centering
+\setlength{\aboverulesep}{5pt}
+\setlength{\belowrulesep}{5pt}
+\begin{tabularx}{1\textwidth}{p{3cm}p{2cm}p{2cm}p{2cm}X}
 \toprule
-{\bf Generations} & {\bf Event}\\
-\midrule
-$\approx$ 240\ts 000 & Common ancestor of all modern Eurasians and Neanderthals at all loci.\\[1mm]
-20\ts 000 & Divergence of Eurasians and Neanderthals.\\[1mm]
-2\ts 500 & 2\% introgression of Neanderthals into Eurasians.\\[1mm]
-0 & Samples from 100 Eurasian individuals obtained.\\
+%& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
+ & Missing data & Run time &  File size & Realism \\
+\midrule 
+{\bf default} & $4.0$\% &  &  & \checkmark \\ \addlinespace
+{\bf + unary simplify} & $0.0$\% &  &  & \checkmark \\ \addlinespace
 \bottomrule
 \end{tabularx}
 \end{center}
-Chromosome of 50\ts 000\ts 000 base pairs, constant effective population sizes of 5000 individuals, uniform recombination rate $1\times 10^{-8}$ bp/generation, uniform mutation rate $1\times 10^{-8}$ bp/generation, all variation is neutral.
+\vspace{5mm}
 \end{frame}
 
-\begin{frame}
-\frametitle{\texttt{msprime} results}
-\includegraphics[scale=.22]{pics/msprime/msprime-sample.png}\quad\quad
-Global ancestry averaged over all of the simulated samples was 
-\begin{itemize}
-\item $96.0\%$ Sapiens
-\item $<0.05\%$ Neanderthal
-\item \magenta{$4.0\%$ unassigned.}
-\end{itemize}
-%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
-\end{frame}
-
-\begin{frame}
-\frametitle{\texttt{SLiM} results}
-\includegraphics[scale=.22]{pics/slim-sample.png}\quad\quad
-Global ancestry averaged over all of the simulated samples was 
-\begin{itemize}
-\item $96.2\%$ Sapiens
-\item $<0.05\%$ Neanderthal
-\item \magenta{$3.8\%$ unassigned.}
-\end{itemize}
-%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
-\end{frame}
-
-\begin{frame}
-\frametitle{\texttt{SLiM} results - missing ancestry}
-\includegraphics[scale=.22]{pics/slim-sample-missing.png}\quad\quad
-Global ancestry averaged over all of the simulated samples was 
-\begin{itemize}
-\item $96.2\%$ Sapiens
-\item $<0.05\%$ Neanderthal
-\item \magenta{$3.8\%$ unassigned.}
-\end{itemize}
-%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
-\end{frame}
-
-\begin{frame}
-\frametitle{The problem is incomplete lineage sorting}
-\begin{center}
-\input{pics/simulation-problem.tex}
-\end{center}
-Some samples do not have simulated ancestors in the given populations.
-\end{frame}
-
-\section{A new method for simulating admixture}
+\section{Simulating tree sequences - new method}
 
 \begin{frame}
 \begin{center}
@@ -704,39 +719,148 @@ Some samples do not have simulated ancestors in the given populations.
 \end{frame}
 
 \begin{frame}
-\frametitle{Results}
-\includegraphics[scale=.22]{pics/new-method-sample.png}\quad\quad
-Global ancestry averaged over all of the simulated samples was 
-\begin{itemize}
-\item $98.0\%$ Sapiens
-\item $2.0\%$ Neanderthal
-\item \magenta{$0.0\%$ unassigned.}
-\end{itemize}
-%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
-\end{frame}
-
-\section{Why this work matters}
-
-\begin{frame}
+\frametitle{New method performance}
 \begin{center}
 \small
 \centering
-\begin{tabularx}{.7\textwidth}{p{2.5cm}p{1.7cm}p{1.7cm}X}
+\setlength{\aboverulesep}{5pt}
+\setlength{\belowrulesep}{5pt}
+\begin{tabularx}{1\textwidth}{p{3.5cm}p{2cm}p{1.9cm}p{1.9cm}X}
 \toprule
-& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
- & { Sapiens} & { Neanderthal} &  Missing \\
+%& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
+ & Missing data & Run time &  File size & Realism \\
 \midrule 
-{\bf msprime} & $96.0$\% & $\approx 0.0$\% & $4.0\%$  \\[3mm]
-{\bf SLiM} & $96.2\%$ &  $\approx 0.0\%$ & $3.8\%$ \\[3mm]
-{\bf Georgia} & $98.0\%$ & $2.0\%$ & $0.0\%$  \\[3mm]
+{\bf \texttt{msprime}} & $4.0$\% &  &  & \crossmark \\ \addlinespace
+{\bf + full ARG} & $0.0$\% & &  & \crossmark \\ \addlinespace
+{\bf + migration records} & $0.0$\% &  & & \crossmark \\ 
 \midrule
-{\bf\magenta{Expected}} & \magenta{$98.0\%$} & \magenta{$2.0\%$} & \magenta{$0.0\%$} \\[1mm]
+{\bf \texttt{SLiM}} & $4.0$\% &  &  & \checkmark \\ \addlinespace
+{\bf + unary simplify} & $0.0$\% &  &  & \checkmark \\
+\midrule
+{\bf\magenta{Georgia}} & \magenta{$0.0$\%} &  &  & \magenta{\checkmark} \\ \addlinespace
 \bottomrule
 \end{tabularx}
 \end{center}
 \vspace{5mm}
-Affects the computation of ancestral tract lengths, population-specific frequency spectra, ancestry-informative markers...
 \end{frame}
+
+
+%\section{Q. Can these methods simulate local ancestry?}
+%
+%
+%
+%
+%\begin{frame}
+%\frametitle{\texttt{SLiM} results}
+%\includegraphics[scale=.22]{pics/slim-sample.png}\quad\quad
+%Global ancestry averaged over all of the simulated samples was 
+%\begin{itemize}
+%\item $96.2\%$ Sapiens
+%\item $<0.05\%$ Neanderthal
+%\item \magenta{$3.8\%$ unassigned.}
+%\end{itemize}
+%%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
+%\end{frame}
+%
+%\begin{frame}
+%\frametitle{\texttt{SLiM} results - missing ancestry}
+%\includegraphics[scale=.22]{pics/slim-sample-missing.png}\quad\quad
+%Global ancestry averaged over all of the simulated samples was 
+%\begin{itemize}
+%\item $96.2\%$ Sapiens
+%\item $<0.05\%$ Neanderthal
+%\item \magenta{$3.8\%$ unassigned.}
+%\end{itemize}
+%%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
+%\end{frame}
+%
+%
+%
+%%\section{A new method for simulating admixture}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-0.tex}
+%%\end{center}
+%%\end{frame}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-1.tex}
+%%\end{center}
+%%\end{frame}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-2.tex}
+%%\end{center}
+%%\end{frame}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-3.tex}
+%%\end{center}
+%%\end{frame}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-5.tex}
+%%\end{center}
+%%\end{frame}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-4.tex}
+%%\end{center}
+%%\end{frame}
+%%
+%%\begin{frame}
+%%\begin{center}
+%%\centering
+%%\input{pics/simulation-method/simulation-method-6.tex}
+%%\end{center}
+%%\end{frame}
+%
+%\begin{frame}
+%\frametitle{Results}
+%\includegraphics[scale=.22]{pics/new-method-sample.png}\quad\quad
+%Global ancestry averaged over all of the simulated samples was 
+%\begin{itemize}
+%\item $98.0\%$ Sapiens
+%\item $2.0\%$ Neanderthal
+%\item \magenta{$0.0\%$ unassigned.}
+%\end{itemize}
+%%0.960 Sapiens, 0.000 Neanderthal, \magenta{0.040 unassigned.}
+%\end{frame}
+%
+%\section{Why this work matters}
+%
+%\begin{frame}
+%\begin{center}
+%\small
+%\centering
+%\begin{tabularx}{.7\textwidth}{p{2.5cm}p{1.7cm}p{1.7cm}X}
+%\toprule
+%& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
+% & { Sapiens} & { Neanderthal} &  Missing \\
+%\midrule 
+%{\bf msprime} & $96.0$\% & $\approx 0.0$\% & $4.0\%$  \\[3mm]
+%{\bf SLiM} & $96.2\%$ &  $\approx 0.0\%$ & $3.8\%$ \\[3mm]
+%{\bf Georgia} & $98.0\%$ & $2.0\%$ & $0.0\%$  \\[3mm]
+%\midrule
+%{\bf\magenta{Expected}} & \magenta{$98.0\%$} & \magenta{$2.0\%$} & \magenta{$0.0\%$} \\[1mm]
+%\bottomrule
+%\end{tabularx}
+%\end{center}
+%\vspace{5mm}
+%Affects the computation of ancestral tract lengths, population-specific frequency spectra, ancestry-informative markers...
+%\end{frame}
 
 %\begin{frame}
 %\frametitle{Simulations are often used to benchmark methods\\ for inferring local ancestry}
@@ -797,23 +921,25 @@ Affects the computation of ancestral tract lengths, population-specific frequenc
 
 \begin{frame}
 \frametitle{Thanks to...}
-\begin{tabularx}{1\textwidth}{p{3cm}X}
+
+\begin{tabularx}{.68\textwidth}{p{3cm}X}
 My supervisors & $\begin{cases}
 \mathrm{Damjan\ts\ts Vukcevic} \\
 \mathrm{Stephen\ts\ts Leslie}
-\end{cases}$\\[8mm]
+\end{cases}$\\ \addlinespace
 My collaborators &
 $\begin{cases}
 \mathrm{Peter\ts\ts Ralph\ts\ts(University\ts\ts of\ts\ts Oregon)} \\
 \mathrm{Jerome\ts\ts Kelleher\ts\ts(BDI,\ts\ts University\ts\ts of\ts\ts Oxford)}
-\end{cases}$\\[8mm]
+\end{cases}$\\ \addlinespace
 Sources of \$\ &
 $\begin{cases}
 \mathrm{Helen\ts\ts Freeman\ts\ts scholarship,\ts\ts UniMelb} \\
-\mathrm{Maurice\ts\ts Belz\ts\ts Fund,\ts\ts School\ts\ts of\ts\ts Maths\ts\ts and\ts\ts Stats}\\
+\mathrm{Maurice\ts\ts Belz\ts\ts Fund,\ts\ts UniMelb}\\
 \mathrm{Research\ts\ts Training\ts\ts Scheme,\ts\ts Australian\ts\ts Government}
 \end{cases}$
 \end{tabularx}
+
 %My supervisors\quad
 \end{frame}
 
@@ -823,8 +949,6 @@ $\begin{cases}
 \begin{thebibliography}{10}
 \beamertemplatearticlebibitems
 {\small
-\bibitem{Browning2018}
-	Browning, S. R., Browning, B. L., Zhou, Y., Tucci, S., \& Akey, J. M. (2018). Analysis of Human Sequence Data Reveals Two Pulses of Archaic Denisovan Admixture. \emph{Cell}, 173(1), pp. 53 - 61.
 
 \bibitem{Haller2018}
 	Haller, B. C., Galloway, J., Kelleher, J., Messer, P. W. \& Ralph, P. L. Tree-sequence recording in SLiM opens new horizons for forward-time simulation of whole genomes. \emph{Molecular Ecology Resources}, 19, pp. 552 - 566.
@@ -840,13 +964,7 @@ $\begin{cases}
 	
 \bibitem{Kelleher2018}
 	Kelleher, J., Wong, Y., Albers, P. K., Wohns, A. W. \& McVean, G. (2018). Inferring the ancestry of everyone. \emph{bioRxiv} (http://dx.doi.org/10.1101/458067)	
-	
-\bibitem{Sankararaman2014}
-	Sankararaman, S., Patterson, N., Reich, D., Mallick, S., Dannemann, M., Pruefer, K., \ldots Reich, D. (2014). The genomic landscape of Neanderthal ancestry in present-day humans. \emph{Nature}, 507(7492), pp. 354 - 357.
-	
-\bibitem{Steinrucken2018}
-	Steinruecken, M., Spence, J. P., Kamm, J. A., Wieczorek, E., \& Song, Y. S. (2018). Model-based detection and analysis of introgressed Neanderthal ancestry in modern humans. \emph{Molecular Ecology}, 27(19), pp. 3873 - 3888.
-	}
+}	
 \end{thebibliography}
 \end{frame}
 
