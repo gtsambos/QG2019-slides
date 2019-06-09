@@ -82,6 +82,7 @@
 \newcommand{\Cvermillion}[1]{\textcolor{Cvermillion}{#1}}
 \newcommand{\Cpurple}[1]{\textcolor{Cpurple}{#1}}
 \newcommand{\magenta}[1]{\textcolor{magenta}{#1}}
+\newcommand{\gray}[1]{\textcolor{gray}{#1}}
 
 
 %commands
@@ -139,7 +140,7 @@
 \titlegraphic{\includegraphics[scale=.5]{pics/unimelb-logo.jpg}}
 \title{Efficient simulation of introgression,\\ admixture and local ancestry}
 \author{Georgia Tsambos}
-\institute{{\normalsize Melbourne Integrative Genomics, Australia}}
+\institute{{\normalsize University of Melbourne, Australia}}
 \date{Quantitative Genomics, 10 June 2019}
 % information
 
@@ -169,7 +170,7 @@
 
 
 \begin{frame}
-\frametitle{What's admixture?}
+\frametitle{What is admixture?}
 %\begin{minipage}[t][2cm][t]{\textwidth}
 %\begin{center}
 %\input{pics/split-popgen.tex}
@@ -180,8 +181,8 @@
 %\item In the context of my work: {\it a group of people.}
 %\item {\it Recombination, mutation, selection and drift} act over time to differentiate  populations that have split from each other.
 %\item Analysing these differences are the basis for methods that infer the ancestry of DNA from people with mixed, or unknown backgrounds...
-    \item A person has \magenta{ancestry} with a given population if they have inherited some genetic material from ancestors who belonged to that population. 
-    \item Any person with $>1$ ancestry is \magenta{admixed}.
+    \item An organism has \magenta{ancestry} with a given population if they have inherited some genetic material from ancestors who belonged to that population. 
+    \item Any organism with $>1$ ancestry is \magenta{admixed}.
     \item \magenta{Introgression} is admixture between different species.
 \end{wideitemize}
 
@@ -205,7 +206,7 @@
 %\end{frame}
 
 \begin{frame}
-\frametitle{What is admixture?}
+%\frametitle{What is admixture?}
 \begin{center}
 \input{pics/admixed-family-tree.tex}
 \end{center}
@@ -219,7 +220,19 @@
 \end{center}
 My PhD work is about \magenta{simulating} and inferring local ancestry.\\[2mm]
 
-Understanding local ancestry is important in studies of demography and history, medicine and genetic pipelines.
+%Understanding local ancestry is important in studies of demography and history, medicine and genetic pipelines.
+\end{frame}
+
+\begin{frame}
+\frametitle{Being able to simulate genetic ancestry is useful!}
+\begin{wideitemize}
+\item {\bf Benchmarking and evaluating method performance\\}
+To assess the accuracy of methods that infer ancestry, we need test datasets for which true local ancestry is known.
+\item {\bf Model training\\}
+Some methods for ancestry inference are trained on simulated data.
+\item {\bf Exploration\\}
+Simulations allow us to explore the influence of various historical scenarios on observed patterns of genetic variation and inheritance.
+\end{wideitemize}
 \end{frame}
 
 %\begin{frame}
@@ -234,7 +247,7 @@ Understanding local ancestry is important in studies of demography and history, 
 %\end{frame}
 
 
-\section{Storing genomes with history using tree sequences}
+\section{Tree sequences: the data format}
 
 \begin{frame}
 \frametitle{Context - genetic data is BIG and REPETITIVE}
@@ -252,41 +265,44 @@ Understanding local ancestry is important in studies of demography and history, 
 %\ldots GTAACGCGATAAGATATTAGCCCAAAAACACAGACATGGTAATAGCGTA\ldots \\
 \ldots GTAACGCGATAAGATATTAGCCCAAAAACACAGACATGGTAATAGCGTA\ldots \\[3mm]
 }
-\magenta{$\leftarrow 5\times 10^7$ bases for small human chromosome $\rightarrow$}
+\gray{$\leftarrow 5\times 10^7$ bases for small human chromosome $\rightarrow$}
 \end{center}
-Storing $n = 1\times 10^5$ chromosomes in a compressed VCF requires $\approx$ 50 GB.
+Repeated haplotypes are often just a consequence of shared history.\\[3mm]
+\magenta{\bf Q. Can we use this history to represent DNA sequences more compactly?}
 \end{frame}
 
-\begin{frame}
-\frametitle{Shared haplotypes are often due to shared history}
-\begin{center}
-{\tt
+%\begin{frame}
+%\frametitle{Context - genetic data is BIG and REPETITIVE}
+%\begin{center}
+%{\tt
+%%\ldots GTAACGCGATAAGA\Cvermillion{G}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
+%%\ldots GTAACGCGATAAGA\Cvermillion{G}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
 %\ldots GTAACGCGATAAGA\Cvermillion{G}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
 %\ldots GTAACGCGATAAGA\Cvermillion{G}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cvermillion{G}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cvermillion{G}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cskyblue{T}AATAGCGTA\ldots \\
+%\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
+%\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
+%\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cvermillion{A}AATAGCGTA\ldots \\
 %\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cskyblue{T}AATAGCGTA\ldots \\
+%%\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cskyblue{T}AATAGCGTA\ldots \\
+%%\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cskyblue{T}AATAGCGTA\ldots \\
 %\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cskyblue{T}AATAGCGTA\ldots \\
-\ldots GTAACGCGATAAGA\Cskyblue{T}ATTAGCCCAAAAACACAGACATGG\Cskyblue{T}AATAGCGTA\ldots \\
-}
-\end{center}
-\magenta{\bf Q. Can we use this history to store DNA more compactly?}
-\end{frame}
+%}
+%\end{center}
+%Shared haplotypes are often due to shared history.\\[3mm]
+%
+%\magenta{\bf Q. Can we use this history to store DNA more compactly?}
+%\end{frame}
 
 
-\begin{frame}
-\frametitle{Tree sequences are the future!}
-\begin{wideitemize}
-\item Tree sequences contain rich information about the \magenta{history} of a sample, not just the genotypes.
-\item We can \magenta{simulate} this data structure using well-established software  (\texttt{msprime}, \texttt{SLiM}). (With some caveats...)
-\item We can \magenta{infer} this data structure with some success (\texttt{tsinfer}).
-%\item In Kelleher et al. (2018), a tree-sequence holding an estimated history of chrom 22 for $\approx$ 500K individuals in the UK Biobank is constructed. It is of comparable size to the corresponding BCF!  
-\end{wideitemize}
-\end{frame}
+%\begin{frame}
+%\frametitle{Tree sequences are the future!}
+%\begin{wideitemize}
+%\item Tree sequences contain rich information about the \magenta{history} of a sample, not just the genotypes.
+%\item We can \magenta{simulate} this data structure using well-established software  (\texttt{msprime}, \texttt{SLiM}). (With some caveats...)
+%\item We can \magenta{infer} this data structure with some success (\texttt{tsinfer}).
+%%\item In Kelleher et al. (2018), a tree-sequence holding an estimated history of chrom 22 for $\approx$ 500K individuals in the UK Biobank is constructed. It is of comparable size to the corresponding BCF!  
+%\end{wideitemize}
+%\end{frame}
 
 \begin{frame}
 \frametitle{Trees show genealogy at a single allele}
@@ -322,22 +338,7 @@ Storing $n = 1\times 10^5$ chromosomes in a compressed VCF requires $\approx$ 50
 \end{frame}
 
 \begin{frame}
-\frametitle{Tree sequences can be stored in tables}
-\hspace{-1.5cm}
-\begin{minipage}{.48\textwidth}
-\begin{center}
-\input{pics/tree-sequence-example/tree-sequence-example-3.tex}
-\end{center}
-\end{minipage}\hfill
-\begin{minipage}{.48\textwidth}
-\begin{center}
-\input{pics/tree-sequence-example/tree-sequence-example-3-table.tex}
-\end{center}
-\end{minipage}
-\end{frame}
-
-\begin{frame}
-\frametitle{Tree sequences can hold info on population structure}
+\frametitle{Tree sequences can hold info on local ancestry}
 \begin{minipage}{.38\textwidth}
 \begin{center}
 \input{pics/tree-with-populations.tex}
@@ -345,18 +346,40 @@ Storing $n = 1\times 10^5$ chromosomes in a compressed VCF requires $\approx$ 50
 \end{minipage}\hfill
 \begin{minipage}{.58\textwidth}
 Nodes may be assigned to populations.\\
-
 The branch joining a sample node to an ancestral node shows the sample's ancestry.
-
 \end{minipage}
 \end{frame}
 
-\begin{frame}
-\frametitle{Local ancestry can be extracted from tree sequences}
-\begin{center}
-\input{pics/local-ancestry-extraction.tex}
-\end{center}
-\end{frame}
+%\begin{frame}
+%\frametitle{Tree sequences are good, use them}
+%\begin{wideitemize}
+%\item $>100\times$ smaller than VCF files for simulated datasets!
+%\item Quick to load and query
+%\item \texttt{tskit}: a collection of software for creating and analysing tree sequence data
+%\end{wideitemize}
+%\end{frame}
+
+%\begin{frame}
+%\frametitle{Tree sequences can be stored in tables}
+%\hspace{-1.5cm}
+%\begin{minipage}{.48\textwidth}
+%\begin{center}
+%\input{pics/tree-sequence-example/tree-sequence-example-3.tex}
+%\end{center}
+%\end{minipage}\hfill
+%\begin{minipage}{.48\textwidth}
+%\begin{center}
+%\input{pics/tree-sequence-example/tree-sequence-example-3-table.tex}
+%\end{center}
+%\end{minipage}
+%\end{frame}
+
+%\begin{frame}
+%\frametitle{Local ancestry can be extracted from tree sequences}
+%\begin{center}
+%\input{pics/local-ancestry-extraction.tex}
+%\end{center}
+%\end{frame}
 
 %\begin{frame}
 %\frametitle{But doing this efficiently is hard...}
@@ -367,19 +390,7 @@ The branch joining a sample node to an ancestral node shows the sample's ancestr
 %\end{wideitemize}
 %\end{frame}
 
-\section{Simulating tree sequences - old methods}
-
-\begin{frame}
-\frametitle{Realistic simulations are important}
-\begin{wideitemize}
-\item {\bf Exploration\\}
-Simulations allow us to explore the influence of various historical scenarios on observed patterns of genetic variation and inheritance.
-\item {\bf Benchmarking and evaluating method performance\\}
-To assess the accuracy of inferential methods, we need test datasets for which the true values of important parameters are known.
-\item {\bf Model training\\}
-Some methods for ancestry inference are trained on simulated data.
-\end{wideitemize}
-\end{frame}
+\section{Simulating admixture - old methods}
 
 \begin{frame}
 \frametitle{\texttt{msprime} simulates \magenta{a sample} backwards-in-time}
@@ -387,9 +398,10 @@ Some methods for ancestry inference are trained on simulated data.
 \input{pics/msprime/msprime-0.tex}
 \end{minipage}\hfill
 \begin{minipage}{.48\textwidth}
-\begin{wideitemize}
-\item Simulates tree sequences under an implementation of the coalescent model.
-\end{wideitemize}
+%\begin{wideitemize}
+Simulates tree sequences under the coalescent model.\\[5mm]
+%\end{wideitemize}
+%\gray{\scriptsize Kelleher, J., Etheridge, A. M., \& McVean, G. (2016). Efficient Coalescent Simulation and Genealogical Analysis for Large Sample Sizes. PLOS Computational Biology, 12(5).}
 \end{minipage}
 \end{frame}
 
@@ -399,9 +411,10 @@ Some methods for ancestry inference are trained on simulated data.
 \input{pics/msprime/msprime-1.tex}
 \end{minipage}\hfill
 \begin{minipage}{.48\textwidth}
-\begin{wideitemize}
-\item Simulates tree sequences under an implementation of the coalescent model.
-\end{wideitemize}
+%\begin{wideitemize}
+Simulates tree sequences under the coalescent model.\\[5mm]
+%\end{wideitemize}
+%\gray{\scriptsize Kelleher, J., Etheridge, A. M., \& McVean, G. (2016). Efficient Coalescent Simulation and Genealogical Analysis for Large Sample Sizes. PLOS Computational Biology, 12(5).}
 \end{minipage}
 \end{frame}
 
@@ -411,10 +424,10 @@ Some methods for ancestry inference are trained on simulated data.
 \input{pics/msprime/msprime-2.tex}
 \end{minipage}\hfill
 \begin{minipage}{.48\textwidth}
-\begin{wideitemize}
-\item Simulates tree sequences under an implementation of the coalescent model.
-%\item See (Kelleher et al., 2016) for more details.
-\end{wideitemize}
+%\begin{wideitemize}
+Simulates tree sequences under the coalescent model.\\[5mm]
+%\end{wideitemize}
+%\gray{\scriptsize Kelleher, J., Etheridge, A. M., \& McVean, G. (2016). Efficient Coalescent Simulation and Genealogical Analysis for Large Sample Sizes. PLOS Computational Biology, 12(5).}
 \end{minipage}
 \end{frame}
 
@@ -424,22 +437,10 @@ Some methods for ancestry inference are trained on simulated data.
 \input{pics/msprime/msprime-3.tex}
 \end{minipage}\hfill
 \begin{minipage}{.48\textwidth}
-\begin{wideitemize}
-\item Simulates tree sequences under an implementation of the coalescent model.
-%\item See (Kelleher et al., 2016) for more details.
-\end{wideitemize}
-\end{minipage}
-\end{frame}
-
-\begin{frame}
-\frametitle{\texttt{msprime} simulates \magenta{a sample} backwards-in-time}
-\begin{minipage}{.48\textwidth}
-\input{pics/msprime/msprime-4.tex}
-\end{minipage}\hfill
-\begin{minipage}{.48\textwidth}
-\begin{wideitemize}
-\item Mutations are assumed to be neutral and can be generated independently of the tree topologies and edge lengths.
-\end{wideitemize}
+%\begin{wideitemize}
+Simulates tree sequences under the coalescent model.\\[5mm]
+%\end{wideitemize}
+%\gray{\scriptsize Kelleher, J., Etheridge, A. M., \& McVean, G. (2016). Efficient Coalescent Simulation and Genealogical Analysis for Large Sample Sizes. PLOS Computational Biology, 12(5).}
 \end{minipage}
 \end{frame}
 
@@ -461,27 +462,6 @@ Chromosome of 50\ts 000\ts 000 base pairs, constant effective population sizes o
 \end{frame}
 
 \begin{frame}
-\frametitle{\texttt{msprime} performance}
-\begin{center}
-\small
-\centering
-\setlength{\aboverulesep}{5pt}
-\setlength{\belowrulesep}{5pt}
-\begin{tabularx}{1\textwidth}{p{3.5cm}p{2cm}p{1.9cm}p{1.9cm}X}
-\toprule
-%& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
- & Missing data & Run time &  File size & Realism \\
-\midrule 
-{\bf default} & $4.0$\% &  &  & \crossmark \\ \addlinespace
-{\bf + full ARG} & $0.0$\% & &  & \crossmark \\ \addlinespace
-{\bf + migration records} & $0.0$\% &  & & \crossmark \\ \addlinespace
-\bottomrule
-\end{tabularx}
-\end{center}
-\vspace{5mm}
-\end{frame}
-
-\begin{frame}
 \frametitle{\texttt{msprime} results - missing ancestry data}
 \includegraphics[scale=.22]{pics/msprime/msprime-sample.png}\quad\quad
 Global ancestry averaged over all of the simulated samples was 
@@ -499,6 +479,28 @@ Global ancestry averaged over all of the simulated samples was
 \input{pics/simulation-problem.tex}
 \end{center}
 Some samples do not have simulated ancestors in the given populations.
+\end{frame}
+
+\begin{frame}
+\frametitle{\texttt{msprime} performance}
+\begin{center}
+\small
+\centering
+\setlength{\aboverulesep}{5pt}
+\setlength{\belowrulesep}{5pt}
+\begin{tabularx}{1\textwidth}{p{3.5cm}p{2cm}p{1.9cm}p{1.9cm}X}
+\toprule
+%& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
+ & Missing data & Run time & File size & Realism \\
+\midrule 
+{\bf default} & $4.0$\% & 6 sec &  9 Mb & \crossmark \\ \addlinespace
+{\bf + all ancestors} & $0.0$\% & 53 sec  &  1700 Mb & \crossmark \\ \addlinespace
+%{\bf + migration records} & $0.0$\% &  & & \crossmark \\ \addlinespace
+\bottomrule
+\end{tabularx}
+\end{center}
+\vspace{5mm}
+Restricted by the limitations of the coalescent model: no selection, random mating, small sample sizes, no more than 1 mutation at any location \ldots
 \end{frame}
 
 %\begin{frame}
@@ -525,19 +527,19 @@ Alternates between
 \end{minipage}
 \end{frame}
 
-\begin{frame}
-\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
-\begin{minipage}{.58\textwidth}
-\input{pics/slim/slim-1.tex}
-\end{minipage}\hfill
-\begin{minipage}{.4\textwidth}
-Alternates between
-\begin{enumerate}
-\item \magenta{forward simulation}
-\item pruning of irrelevant history.
-\end{enumerate}
-\end{minipage}
-\end{frame}
+%\begin{frame}
+%\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
+%\begin{minipage}{.58\textwidth}
+%\input{pics/slim/slim-1.tex}
+%\end{minipage}\hfill
+%\begin{minipage}{.4\textwidth}
+%Alternates between
+%\begin{enumerate}
+%\item \magenta{forward simulation}
+%\item pruning of irrelevant history.
+%\end{enumerate}
+%\end{minipage}
+%\end{frame}
 
 \begin{frame}
 \frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
@@ -548,24 +550,24 @@ Alternates between
 Alternates between
 \begin{enumerate}
 \item forward simulation
-\item \magenta{pruning of irrelevant history.}
-\end{enumerate}
-\end{minipage}
-\end{frame}
-
-\begin{frame}
-\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
-\begin{minipage}{.58\textwidth}
-\input{pics/slim/slim-3.tex}
-\end{minipage}\hfill
-\begin{minipage}{.4\textwidth}
-Alternates between
-\begin{enumerate}
-\item \magenta{forward simulation}
 \item pruning of irrelevant history.
 \end{enumerate}
 \end{minipage}
 \end{frame}
+
+%\begin{frame}
+%\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
+%\begin{minipage}{.58\textwidth}
+%\input{pics/slim/slim-3.tex}
+%\end{minipage}\hfill
+%\begin{minipage}{.4\textwidth}
+%Alternates between
+%\begin{enumerate}
+%\item \magenta{forward simulation}
+%\item pruning of irrelevant history.
+%\end{enumerate}
+%\end{minipage}
+%\end{frame}
 
 \begin{frame}
 \frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
@@ -576,24 +578,24 @@ Alternates between
 Alternates between
 \begin{enumerate}
 \item forward simulation
-\item \magenta{pruning of irrelevant history.}
-\end{enumerate}
-\end{minipage}
-\end{frame}
-
-\begin{frame}
-\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
-\begin{minipage}{.58\textwidth}
-\input{pics/slim/slim-5.tex}
-\end{minipage}\hfill
-\begin{minipage}{.4\textwidth}
-Alternates between
-\begin{enumerate}
-\item \magenta{forward simulation}
 \item pruning of irrelevant history.
 \end{enumerate}
 \end{minipage}
 \end{frame}
+
+%\begin{frame}
+%\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
+%\begin{minipage}{.58\textwidth}
+%\input{pics/slim/slim-5.tex}
+%\end{minipage}\hfill
+%\begin{minipage}{.4\textwidth}
+%Alternates between
+%\begin{enumerate}
+%\item \magenta{forward simulation}
+%\item pruning of irrelevant history.
+%\end{enumerate}
+%\end{minipage}
+%\end{frame}
 
 \begin{frame}
 \frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
@@ -604,24 +606,24 @@ Alternates between
 Alternates between
 \begin{enumerate}
 \item forward simulation
-\item \magenta{pruning of irrelevant history.}
-\end{enumerate}
-\end{minipage}
-\end{frame}
-
-\begin{frame}
-\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
-\begin{minipage}{.58\textwidth}
-\input{pics/slim/slim-7.tex}
-\end{minipage}\hfill
-\begin{minipage}{.4\textwidth}
-Alternates between
-\begin{enumerate}
-\item \magenta{forward simulation}
 \item pruning of irrelevant history.
 \end{enumerate}
 \end{minipage}
 \end{frame}
+
+%\begin{frame}
+%\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
+%\begin{minipage}{.58\textwidth}
+%\input{pics/slim/slim-7.tex}
+%\end{minipage}\hfill
+%\begin{minipage}{.4\textwidth}
+%Alternates between
+%\begin{enumerate}
+%\item \magenta{forward simulation}
+%\item pruning of irrelevant history.
+%\end{enumerate}
+%\end{minipage}
+%\end{frame}
 
 \begin{frame}
 \frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
@@ -632,20 +634,20 @@ Alternates between
 Alternates between
 \begin{enumerate}
 \item forward simulation
-\item \magenta{pruning of irrelevant history.}
+\item pruning of irrelevant history.
 \end{enumerate}
 \end{minipage}
 \end{frame}
 
-\begin{frame}
-\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
-\begin{minipage}{.58\textwidth}
-\input{pics/slim/slim-10.tex}
-\end{minipage}\hfill
-\begin{minipage}{.4\textwidth}
-Mutations can be added during the simulation of the tree topologies, or generated independently and added afterwards.
-\end{minipage}
-\end{frame}
+%\begin{frame}
+%\frametitle{\texttt{SLiM} simulates \magenta{an entire population} forward-in-time}
+%\begin{minipage}{.58\textwidth}
+%\input{pics/slim/slim-10.tex}
+%\end{minipage}\hfill
+%\begin{minipage}{.4\textwidth}
+%Mutations can be added during the simulation of the tree topologies, or generated independently and added afterwards.
+%\end{minipage}
+%\end{frame}
 
 \begin{frame}
 \frametitle{\texttt{SLiM} performance}
@@ -654,13 +656,14 @@ Mutations can be added during the simulation of the tree topologies, or generate
 \centering
 \setlength{\aboverulesep}{5pt}
 \setlength{\belowrulesep}{5pt}
-\begin{tabularx}{1\textwidth}{p{3cm}p{2cm}p{2cm}p{2cm}X}
+\begin{tabularx}{.9\textwidth}{p{2cm}p{2cm}p{1.9cm}p{1.9cm}X}
 \toprule
 %& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
- & Missing data & Run time &  File size & Realism \\
+ & Missing data & Run time & File size & Realism \\
 \midrule 
-{\bf default} & $4.0$\% &  &  & \checkmark \\ \addlinespace
-{\bf + unary simplify} & $0.0$\% &  &  & \checkmark \\ \addlinespace
+%{\bf default} & $4.0$\% & 6 sec &  9 Mb & \crossmark \\ \addlinespace
+\texttt{msprime}& $0.0$\% & 53 sec  &  1700 Mb & \crossmark \\ \addlinespace
+\magenta{\texttt{SLiM}} & \magenta{$0.0$\%} & \magenta{$>1$ hr} & \magenta{41 Mb} & \magenta{\checkmark}  \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -730,14 +733,14 @@ Mutations can be added during the simulation of the tree topologies, or generate
 %& \multicolumn{3}{c}{{\bf Global ancestry}} \\[1mm]
  & Missing data & Run time &  File size & Realism \\
 \midrule 
-{\bf \texttt{msprime}} & $4.0$\% &  &  & \crossmark \\ \addlinespace
-{\bf + full ARG} & $0.0$\% & &  & \crossmark \\ \addlinespace
-{\bf + migration records} & $0.0$\% &  & & \crossmark \\ 
-\midrule
-{\bf \texttt{SLiM}} & $4.0$\% &  &  & \checkmark \\ \addlinespace
-{\bf + unary simplify} & $0.0$\% &  &  & \checkmark \\
-\midrule
-{\bf\magenta{Georgia}} & \magenta{$0.0$\%} &  &  & \magenta{\checkmark} \\ \addlinespace
+%{\bf \texttt{msprime}} & $4.0$\% & 6 sec & 9 Mb & \crossmark \\ \addlinespace
+{\bf \texttt{msprime}}  & $0.0$\% & 53 sec & 1700 Mb  & \crossmark \\ \addlinespace
+%{\bf + migration records} & $0.0$\% &  & & \crossmark \\ 
+%\midrule
+%{\bf \texttt{SLiM}} & $4.0$\% & 10 min & 16 Mb  & \checkmark \\ \addlinespace
+{\bf \texttt{SLiM}}& {$0.0$\%} & $>1$ hr  &  41 Mb & {\checkmark} \\ \addlinespace
+%\midrule
+{\bf\magenta{Georgia}} & \magenta{$0.0$\%} & \magenta{86 sec} & \magenta{39 Mb}  & \magenta{\checkmark} \\ \addlinespace
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -914,8 +917,7 @@ Mutations can be added during the simulation of the tree topologies, or generate
 \begin{wideitemize}
 \item It is useful to keep track of local ancestry in genetic simulations.
 \item Standard tree sequence simulators are able to do this with the help of efficient ancestry-extraction algorithms.
-\item However, they do not retain the ancestry of all segments due to incomplete lineage sorting.
-\item A new simulation method overcomes this problem.
+\item A new simulation method can do this quickly while also allowing the user to model complex admixture scenarios.
 \end{wideitemize}
 \end{frame}
 
@@ -924,8 +926,8 @@ Mutations can be added during the simulation of the tree topologies, or generate
 
 \begin{tabularx}{.68\textwidth}{p{3cm}X}
 My supervisors & $\begin{cases}
-\mathrm{Damjan\ts\ts Vukcevic} \\
-\mathrm{Stephen\ts\ts Leslie}
+\mathrm{Damjan\ts\ts Vukcevic\ts\ts (University\ts\ts of\ts\ts Melbourne)} \\
+\mathrm{Stephen\ts\ts Leslie\ts\ts (University\ts\ts of \ts\ts Melbourne)}
 \end{cases}$\\ \addlinespace
 My collaborators &
 $\begin{cases}
@@ -937,35 +939,24 @@ $\begin{cases}
 \mathrm{Helen\ts\ts Freeman\ts\ts scholarship,\ts\ts UniMelb} \\
 \mathrm{Maurice\ts\ts Belz\ts\ts Fund,\ts\ts UniMelb}\\
 \mathrm{Research\ts\ts Training\ts\ts Scheme,\ts\ts Australian\ts\ts Government}
-\end{cases}$
+\end{cases}$\\ \addlinespace
 \end{tabularx}
+
+Special thanks to Jerome and the University of Oxford for hosting me in the UK this year.
 
 %My supervisors\quad
 \end{frame}
 
-% Bibliography
-\begin{frame}[allowframebreaks]
+\begin{frame}
 \frametitle{References}
-\begin{thebibliography}{10}
-\beamertemplatearticlebibitems
-{\small
 
-\bibitem{Haller2018}
-	Haller, B. C., Galloway, J., Kelleher, J., Messer, P. W. \& Ralph, P. L. Tree-sequence recording in SLiM opens new horizons for forward-time simulation of whole genomes. \emph{Molecular Ecology Resources}, 19, pp. 552 - 566.
-	
-\bibitem{Haller2019}
-	Haller, B. \& Messer, P. W. SLiM 3: Forward Genetic Simulations Beyond the Wright-Fisher Model. \emph{Molecular Biology and Evolution}, 36(3), pp. 632 - 637.
+{\bf \texttt{msprime} and tree sequences:}\\
+Kelleher, J., et al. (2016). Efficient Coalescent Simulation and Genealogical Analysis for Large Sample Sizes. PLOS Computational Biology, 12(5).
+\vspace{5mm}
 
-\bibitem{Kelleher2016}
-	Kelleher, J., and Etheridge, A. M., \& McVean, G. (2016). Efficient Coalescent Simulation and Genealogical Analysis for Large Sample Sizes. \emph{PLoS Computational Biology}, 12(5), pp. 1553 - 7358.
-	
-\bibitem{EffPedRec}
-	Kelleher, J., Thornton, K. R., Ashander, J. \& Ralph, P. L. (2018) Efficient pedigree recording for fast population genetics simulation. \emph{PLoS Computational Biology} 14(11), pp 1 - 21.
-	
-\bibitem{Kelleher2018}
-	Kelleher, J., Wong, Y., Albers, P. K., Wohns, A. W. \& McVean, G. (2018). Inferring the ancestry of everyone. \emph{bioRxiv} (http://dx.doi.org/10.1101/458067)	
-}	
-\end{thebibliography}
+{\bf \texttt{SLiM}:}\\
+Galloway, J.,  et al. (2018). Tree-sequence recording in SLiM opens new horizons for forward-time simulation of whole genomes. Molecular Ecology Resources, (November 2018), 552–566.
+
 \end{frame}
 
 \end{document}
