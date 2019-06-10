@@ -161,8 +161,8 @@
 \itemsep7mm
 \item[1. ] Introduction to admixture and local ancestry
 \item[2. ] Tree sequences
-\item[3. ] Simulating local ancestry with tree sequences - existing ways
-\item[4. ] Simulating local ancestry with tree sequences - new way
+\item[3. ] Simulating local ancestry with tree sequences: existing methods
+\item[4. ] Simulating local ancestry with tree sequences: new method
 \end{enumerate}
 \end{frame}
 
@@ -227,7 +227,7 @@ My PhD work is about \magenta{simulating} and inferring local ancestry.\\[2mm]
 \frametitle{Being able to simulate genetic ancestry is useful!}
 \begin{wideitemize}
 \item {\bf Benchmarking and evaluating method performance\\}
-To assess the accuracy of methods that infer ancestry, we need test datasets for which true local ancestry is known.
+To assess the accuracy of methods that infer ancestry, we need test datasets in which we know the true local ancestry.
 \item {\bf Model training\\}
 Some methods for ancestry inference are trained on simulated data.
 \item {\bf Exploration\\}
@@ -250,7 +250,7 @@ Simulations allow us to explore the influence of various historical scenarios on
 \section{Tree sequences: the data format}
 
 \begin{frame}
-\frametitle{Context - genetic data is BIG and REPETITIVE}
+\frametitle{Context: genetic data is BIG and REPETITIVE}
  \begin{center}
 {\tt
 %\ldots GTAACGCGATAAGAGATTAGCCCAAAAACACAGACATGGAAATAGCGTA\ldots \\
@@ -265,7 +265,7 @@ Simulations allow us to explore the influence of various historical scenarios on
 %\ldots GTAACGCGATAAGATATTAGCCCAAAAACACAGACATGGTAATAGCGTA\ldots \\
 \ldots GTAACGCGATAAGATATTAGCCCAAAAACACAGACATGGTAATAGCGTA\ldots \\[3mm]
 }
-\gray{$\leftarrow 5\times 10^7$ bases for small human chromosome $\rightarrow$}
+\gray{\footnotesize $\leftarrow 5\times 10^7$ bases for small human chromosome $\rightarrow$}
 \end{center}
 Repeated haplotypes are often just a consequence of shared history.\\[3mm]
 \magenta{\bf Q. Can we use this history to represent DNA sequences more compactly?}
@@ -305,7 +305,7 @@ Repeated haplotypes are often just a consequence of shared history.\\[3mm]
 %\end{frame}
 
 \begin{frame}
-\frametitle{Trees show genealogy at a single allele}
+\frametitle{Trees show genealogy at a single locus}
 \begin{minipage}{.48\textwidth}
 \begin{center}
 \input{pics/simple-tree.tex}
@@ -320,7 +320,7 @@ Repeated haplotypes are often just a consequence of shared history.\\[3mm]
 \end{frame}
 
 \begin{frame}
-\frametitle{Tree sequences show genealogy over an interval of alleles}
+\frametitle{Tree sequences show genealogy over an interval of loci}
 \begin{center}
 \input{pics/tree-sequence-example/tree-sequence-example-1.tex}
 \end{center}
@@ -390,7 +390,7 @@ The branch joining a sample node to an ancestral node shows the sample's ancestr
 %\end{wideitemize}
 %\end{frame}
 
-\section{Simulating admixture - old methods}
+\section{Simulating admixture: existing methods}
 
 \begin{frame}
 \frametitle{\texttt{msprime} simulates \magenta{a sample} backwards-in-time}
@@ -462,7 +462,7 @@ Chromosome of 50\ts 000\ts 000 base pairs, constant effective population sizes o
 \end{frame}
 
 \begin{frame}
-\frametitle{\texttt{msprime} results - missing ancestry data}
+\frametitle{\texttt{msprime} results: missing ancestry data}
 \includegraphics[scale=.22]{pics/msprime/msprime-sample.png}\quad\quad
 Global ancestry averaged over all of the simulated samples was 
 \begin{itemize}
@@ -670,7 +670,7 @@ Alternates between
 \vspace{5mm}
 \end{frame}
 
-\section{Simulating tree sequences - new method}
+\section{Simulating tree sequences: new method}
 
 \begin{frame}
 \begin{center}
